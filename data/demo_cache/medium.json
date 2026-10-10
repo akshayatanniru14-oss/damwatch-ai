@@ -1,0 +1,22 @@
+{
+  "issue_detected": "Seepage observed near the base of the dam.",
+  "issue_category": "seepage",
+  "severity": "medium",
+  "evidence_strength": "moderate",
+  "evidence_reason": "Visible water accumulation and dampness in the area.",
+  "visual_evidence": [
+    "image1.jpg",
+    "image2.jpg"
+  ],
+  "recommended_action": "Schedule a detailed inspection by a civil engineer.",
+  "escalation": "Notify the dam management team immediately.",
+  "data_gaps": [
+    "Water level readings from the gauge are not available.",
+    "No historical data on seepage patterns."
+  ],
+  "checklist": [
+    "Inspect the area for further signs of seepage.",
+    "Check the integrity of the dam structure.",
+    "Review maintenance records for the past year."
+  ]
+}

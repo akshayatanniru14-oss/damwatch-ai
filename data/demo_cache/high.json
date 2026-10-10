@@ -1,0 +1,24 @@
+{
+  "issue_detected": "Seepage observed near the base of the dam.",
+  "issue_category": "seepage",
+  "severity": "high",
+  "evidence_strength": "strong",
+  "evidence_reason": "Clear visual evidence of water seeping through the dam structure.",
+  "visual_evidence": [
+    "image1.jpg",
+    "image2.jpg"
+  ],
+  "recommended_action": "Immediate inspection by a structural engineer is recommended.",
+  "escalation": "Notify the dam safety authority and prepare for potential evacuation.",
+  "data_gaps": [
+    "No recent structural integrity reports available.",
+    "Lack of historical data on seepage incidents."
+  ],
+  "checklist": [
+    "Conduct a detailed inspection of the dam structure.",
+    "Review historical maintenance records.",
+    "Assess the impact of seepage on surrounding areas.",
+    "Prepare a report for the safety authority.",
+    "Plan for potential emergency measures."
+  ]
+}

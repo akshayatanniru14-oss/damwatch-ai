@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+sqlmodel
+python-dotenv
+httpx
+python-multipart
+aiofiles
+leaflet
+pillow
+CORS
+pytest
+pytest-asyncio

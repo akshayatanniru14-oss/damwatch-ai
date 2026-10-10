@@ -1,0 +1,19 @@
+{
+  "issue_detected": "No issues detected.",
+  "issue_category": "none_visible",
+  "severity": "low",
+  "evidence_strength": "strong",
+  "evidence_reason": "Clear images show no visible damage or anomalies.",
+  "visual_evidence": [
+    "image1.jpg",
+    "image2.jpg"
+  ],
+  "recommended_action": "Continue regular monitoring.",
+  "escalation": "No escalation required.",
+  "data_gaps": [],
+  "checklist": [
+    "Schedule next inspection in 6 months.",
+    "Maintain regular monitoring of water levels.",
+    "Document any changes in the environment."
+  ]
+}

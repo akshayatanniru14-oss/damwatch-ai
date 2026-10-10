@@ -1,0 +1,161 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bhakra Dam",
+        "type": "Gravity Dam",
+        "state": "Himachal Pradesh"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.7632, 31.1986]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sardar Sarovar Dam",
+        "type": "Concrete Gravity Dam",
+        "state": "Gujarat"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [73.6880, 21.8480]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tehri Dam",
+        "type": "Rock and Earth Fill Dam",
+        "state": "Uttarakhand"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.4470, 30.3350]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Narmada Dam",
+        "type": "Earthfill Dam",
+        "state": "Madhya Pradesh"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.1650, 22.3039]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Idukki Dam",
+        "type": "Arch Dam",
+        "state": "Kerala"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.0590, 9.7460]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Koynanagar Dam",
+        "type": "Earthfill Dam",
+        "state": "Maharashtra"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [73.6880, 18.0340]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Krishna Raja Sagara Dam",
+        "type": "Gravity Dam",
+        "state": "Karnataka"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.6500, 12.3960]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mettur Dam",
+        "type": "Gravity Dam",
+        "state": "Tamil Nadu"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.8230, 11.6850]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dharoi Dam",
+        "type": "Earthfill Dam",
+        "state": "Gujarat"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [73.7060, 23.1970]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Srisailam Dam",
+        "type": "Concrete Gravity Dam",
+        "state": "Andhra Pradesh"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.5550, 16.0670]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Upper Ganga Canal",
+        "type": "Canal",
+        "state": "Uttarakhand"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.0620, 29.9500]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kakrapar Dam",
+        "type": "Earthfill Dam",
+        "state": "Gujarat"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [73.6510, 21.3910]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pancheshwar Dam",
+        "type": "Concrete Gravity Dam",
+        "state": "Uttarakhand"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [80.1150, 29.4200]
+      }
+    }
+  ]
+}

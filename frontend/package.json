@@ -1,0 +1,35 @@
+{
+  "name": "damwatch-ai",
+  "version": "1.0.0",
+  "description": "A web app for dam inspection triage reports using AI.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "axios": "^0.21.1",
+    "leaflet": "^1.7.1",
+    "react-leaflet": "^4.2.1",
+    "tailwindcss": "^2.2.19"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^1.3.2",
+    "vite": "^2.6.4",
+    "typescript": "^4.4.3",
+    "postcss": "^8.3.6",
+    "autoprefixer": "^10.3.7"
+  },
+  "keywords": [
+    "dam",
+    "inspection",
+    "AI",
+    "webapp"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
