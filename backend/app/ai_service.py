@@ -9,7 +9,7 @@ import httpx
 from fastapi import HTTPException
 from dotenv import load_dotenv
 
-from app.schemas import AnalyzeResponse
+from app.schemas import AnalyzeResponse, CompareResponse
 
 load_dotenv(override=True)
 
@@ -66,6 +66,20 @@ def _parse_model_response(response_json: dict[str, Any]) -> AnalyzeResponse:
         raise HTTPException(
             status_code=502, detail="Gemma returned invalid analysis JSON"
         ) from exc
+
+
+def _parse_json_response(response_json: dict[str, Any], response_type: type[Any]) -> Any:
+    try:
+        text = response_json["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise HTTPException(status_code=502, detail="Gemma returned no usable analysis") from exc
+    cleaned = text.strip()
+    if "{" in cleaned and "}" in cleaned:
+        cleaned = cleaned[cleaned.find("{"):cleaned.rfind("}") + 1]
+    try:
+        return response_type.model_validate(json.loads(cleaned))
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="Gemma returned invalid comparison JSON") from exc
     except ValueError as exc:
         raise HTTPException(
             status_code=502, detail="Gemma returned JSON with missing or invalid report fields"
@@ -114,3 +128,41 @@ async def analyze_images(
         raise HTTPException(status_code=502, detail="Unable to reach Gemma") from exc
 
     return _parse_model_response(response.json()).model_dump()
+
+
+async def compare_images(
+    old_image_path: str, new_image_path: str, old_note: str, new_note: str
+) -> dict[str, Any]:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY is not configured")
+
+    prompt = f"""You are DamWatch AI, comparing two inspection photos of the same
+infrastructure location. The first image is OLDER and the second is NEWER.
+Describe only visible changes; do not claim deterioration when angle, lighting,
+or image quality makes comparison uncertain.
+
+Older inspector note: {old_note or "not provided"}
+Newer inspector note: {new_note or "not provided"}
+
+Return ONLY JSON with exactly these keys:
+change_detected (boolean), change_summary (string), changes (array of objects
+with observation and direction, where direction is worsened, improved, or unchanged),
+updated_severity (low, medium, high, or critical), recommended_action (string).
+This is preliminary visual triage, not a safety certification."""
+    parts = [{"text": prompt}, _image_part(old_image_path), _image_part(new_image_path)]
+    payload = {
+        "contents": [{"role": "user", "parts": parts}],
+        "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
+    }
+    model = os.getenv("GEMMA_MODEL", "gemma-4-26b-a4b-it")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    try:
+        async with httpx.AsyncClient(timeout=90) as client:
+            response = await client.post(url, params={"key": api_key}, json=payload)
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail="Gemma comparison request failed") from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail="Unable to reach Gemma") from exc
+    return _parse_json_response(response.json(), CompareResponse).model_dump()

@@ -9,6 +9,7 @@ DamWatch AI is a web application designed to facilitate the inspection and triag
 - **Report Card**: Each report includes issue type, severity, visual evidence, recommended actions, and a checklist for next steps.
 - **Map Visualization**: A Leaflet map displays the selected asset and all saved reports with color-coded pins based on severity.
 - **Before/After Comparison**: Users can compare new images with previously saved reports to detect changes over time.
+- **Condition Timeline**: A dedicated comparison flow sends earlier and newer inspection images to Gemma and reports whether visible conditions are stable, improving, or worsening.
 - **Demo Mode**: A toggle feature allows users to replay cached responses for demonstration purposes without needing an active API connection.
 
 ## Tech Stack
