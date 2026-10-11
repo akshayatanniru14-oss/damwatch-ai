@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CompareResponse } from '../types';
+import { compareDams } from '../api';
 
 const ComparePanel: React.FC = () => {
     const [oldImage, setOldImage] = useState<File | null>(null);
@@ -24,10 +25,7 @@ const ComparePanel: React.FC = () => {
         form.append('old_note', oldNote);
         form.append('new_note', newNote);
         try {
-            const response = await fetch('/api/compare', { method: 'POST', body: form });
-            const body = await response.json();
-            if (!response.ok) throw new Error(body.detail || 'Comparison failed.');
-            setResult(body);
+            setResult(await compareDams(form));
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Comparison failed.');
         } finally {

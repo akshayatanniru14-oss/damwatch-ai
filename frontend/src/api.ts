@@ -2,6 +2,8 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
+export const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
+
 export const analyzeDam = async (data: FormData) => {
     try {
         const response = await axios.post(`${API_BASE_URL}/analyze`, data, {
@@ -38,4 +40,9 @@ export const fetchAssets = async () => {
         console.error('Error fetching assets:', error);
         throw error;
     }
+};
+
+export const fetchReports = async () => {
+    const response = await axios.get(apiUrl('/reports'));
+    return response.data;
 };

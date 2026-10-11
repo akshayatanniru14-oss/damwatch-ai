@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Report } from '../types';
+import { fetchReports } from '../api';
 
 const ReportLog: React.FC = () => {
     const [reports, setReports] = useState<Report[]>([]);
@@ -9,12 +10,7 @@ const ReportLog: React.FC = () => {
     useEffect(() => {
         const fetchReports = async () => {
             try {
-                const response = await fetch('/api/reports');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch reports');
-                }
-                const data = await response.json();
-                setReports(data);
+                setReports(await fetchReports());
             } catch (err) {
                 setError(err.message);
             } finally {

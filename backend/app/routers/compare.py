@@ -13,8 +13,8 @@ router = APIRouter()
 async def compare(
     old_image: Annotated[UploadFile, File(...)],
     new_image: Annotated[UploadFile, File(...)],
-    old_note: Annotated[str, Form("")],
-    new_note: Annotated[str, Form("")],
+    old_note: Annotated[str, Form()] = "",
+    new_note: Annotated[str, Form()] = "",
 ) -> CompareResponse:
     if not (old_image.content_type or "").startswith("image/") or not (
         new_image.content_type or ""
