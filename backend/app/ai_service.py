@@ -3,7 +3,7 @@ import json
 import mimetypes
 import os
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, TypeVar
 
 import httpx
 from fastapi import HTTPException
@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from app.schemas import AnalyzeResponse, CompareResponse
 
 load_dotenv(override=True)
+
+ModelResponse = TypeVar("ModelResponse")
 
 
 ANALYSIS_PROMPT = """You are DamWatch AI, a cautious civil-infrastructure inspection
@@ -51,39 +53,88 @@ def _image_part(path: str) -> dict[str, Any]:
     }
 
 
+def _response_text(response_json: dict[str, Any]) -> str:
+    try:
+        return response_json["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise HTTPException(status_code=502, detail="Gemma returned no usable analysis") from exc
+
+
+def _parse_json_text(text: str, response_type: type[ModelResponse]) -> ModelResponse:
+    cleaned = text.strip().replace("```json", "").replace("```", "").strip()
+    object_start = cleaned.find("{")
+    if object_start < 0:
+        raise ValueError("Gemma response did not contain a JSON object")
+    cleaned = cleaned[object_start:]
+    try:
+        parsed, _ = json.JSONDecoder().raw_decode(cleaned)
+        return response_type.model_validate(parsed)
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise ValueError("Gemma returned invalid JSON or invalid report fields") from exc
+
+
 def _parse_model_response(response_json: dict[str, Any]) -> AnalyzeResponse:
     try:
-        text = response_json["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError, TypeError) as exc:
-        raise HTTPException(status_code=502, detail="Gemma returned no usable analysis") from exc
-
-    cleaned = text.strip()
-    if "{" in cleaned and "}" in cleaned:
-        cleaned = cleaned[cleaned.find("{"):cleaned.rfind("}") + 1]
-    try:
-        return AnalyzeResponse.model_validate(json.loads(cleaned))
-    except json.JSONDecodeError as exc:
-        raise HTTPException(
-            status_code=502, detail="Gemma returned invalid analysis JSON"
-        ) from exc
-
-
-def _parse_json_response(response_json: dict[str, Any], response_type: type[Any]) -> Any:
-    try:
-        text = response_json["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError, TypeError) as exc:
-        raise HTTPException(status_code=502, detail="Gemma returned no usable analysis") from exc
-    cleaned = text.strip()
-    if "{" in cleaned and "}" in cleaned:
-        cleaned = cleaned[cleaned.find("{"):cleaned.rfind("}") + 1]
-    try:
-        return response_type.model_validate(json.loads(cleaned))
-    except (json.JSONDecodeError, ValueError) as exc:
-        raise HTTPException(status_code=502, detail="Gemma returned invalid comparison JSON") from exc
+        return _parse_json_text(_response_text(response_json), AnalyzeResponse)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=502, detail="Gemma returned JSON with missing or invalid report fields"
-        ) from exc
+        raise HTTPException(status_code=502, detail="Gemma returned invalid analysis JSON") from exc
+
+
+def _parse_json_response(response_json: dict[str, Any], response_type: type[ModelResponse]) -> ModelResponse:
+    try:
+        return _parse_json_text(_response_text(response_json), response_type)
+    except ValueError as exc:
+        raise HTTPException(status_code=502, detail="Gemma returned invalid comparison JSON") from exc
+
+
+async def _generate_content(
+    client: httpx.AsyncClient,
+    url: str,
+    api_key: str,
+    parts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    payload = {
+        "contents": [{"role": "user", "parts": parts}],
+        "generationConfig": {
+            "temperature": 0.1,
+            "responseMimeType": "application/json",
+        },
+    }
+    response = await client.post(url, params={"key": api_key}, json=payload)
+    response.raise_for_status()
+    try:
+        return response.json()
+    except ValueError:
+        raise HTTPException(status_code=502, detail="Gemma returned a non-JSON API response")
+
+
+async def _generate_with_json_retry(
+    client: httpx.AsyncClient,
+    url: str,
+    api_key: str,
+    parts: list[dict[str, Any]],
+    response_type: type[ModelResponse],
+) -> ModelResponse:
+    for attempt in range(2):
+        response_json = await _generate_content(client, url, api_key, parts)
+        try:
+            return _parse_json_text(_response_text(response_json), response_type)
+        except ValueError:
+            if attempt == 0:
+                parts = parts + [
+                    {
+                        "text": (
+                            "Return valid JSON only. Do not use markdown or explanations. "
+                            "Match the required schema exactly."
+                        )
+                    }
+                ]
+            else:
+                raise HTTPException(
+                    status_code=502,
+                    detail="Gemma returned invalid analysis JSON after one retry",
+                )
+    raise HTTPException(status_code=502, detail="Gemma analysis failed")
 
 
 async def analyze_images(
@@ -108,15 +159,11 @@ async def analyze_images(
     parts.extend(_image_part(path) for path in image_paths)
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-    payload = {
-        "contents": [{"role": "user", "parts": parts}],
-        "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
-    }
-
     try:
         async with httpx.AsyncClient(timeout=90) as client:
-            response = await client.post(url, params={"key": api_key}, json=payload)
-            response.raise_for_status()
+            result = await _generate_with_json_retry(
+                client, url, api_key, parts, AnalyzeResponse
+            )
     except httpx.HTTPStatusError as exc:
         detail = "Gemma request failed"
         try:
@@ -127,7 +174,7 @@ async def analyze_images(
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail="Unable to reach Gemma") from exc
 
-    return _parse_model_response(response.json()).model_dump()
+    return result.model_dump()
 
 
 async def compare_images(
@@ -151,18 +198,15 @@ with observation and direction, where direction is worsened, improved, or unchan
 updated_severity (low, medium, high, or critical), recommended_action (string).
 This is preliminary visual triage, not a safety certification."""
     parts = [{"text": prompt}, _image_part(old_image_path), _image_part(new_image_path)]
-    payload = {
-        "contents": [{"role": "user", "parts": parts}],
-        "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
-    }
     model = os.getenv("GEMMA_MODEL", "gemma-4-26b-a4b-it")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     try:
         async with httpx.AsyncClient(timeout=90) as client:
-            response = await client.post(url, params={"key": api_key}, json=payload)
-            response.raise_for_status()
+            result = await _generate_with_json_retry(
+                client, url, api_key, parts, CompareResponse
+            )
     except httpx.HTTPStatusError as exc:
         raise HTTPException(status_code=502, detail="Gemma comparison request failed") from exc
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail="Unable to reach Gemma") from exc
-    return _parse_json_response(response.json(), CompareResponse).model_dump()
+    return result.model_dump()
