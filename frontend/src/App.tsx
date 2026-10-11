@@ -9,20 +9,22 @@ import DemoModeToggle from './components/DemoModeToggle';
 import RawAnalysisPanel from './components/RawAnalysisPanel';
 
 const App: React.FC = () => {
+  const [demoMode, setDemoMode] = React.useState(false);
+
   return (
     <Router>
       <div className="app-shell">
         <Header />
         <main className="app-main">
           <Routes>
-            <Route path="/" element={<IntakeForm />} />
+            <Route path="/" element={<IntakeForm demoMode={demoMode} />} />
             <Route path="/reports" element={<ReportLog />} />
             <Route path="/map" element={<MapView />} />
             <Route path="/compare" element={<ComparePanel />} />
             <Route path="/raw-analysis" element={<RawAnalysisPanel />} />
           </Routes>
         </main>
-        <DemoModeToggle onToggle={() => undefined} />
+        <DemoModeToggle onToggle={setDemoMode} />
       </div>
     </Router>
   );

@@ -8,7 +8,35 @@ const assets = [
     'Idukki Dam', 'Koynanagar Dam', 'Krishna Raja Sagara Dam', 'Mettur Dam',
 ];
 
-const IntakeForm: React.FC = () => {
+const demoAnalysis: AnalyzeResponse = {
+    issue_detected: 'Localized erosion and seepage at the canal edge',
+    issue_category: 'erosion',
+    severity: 'medium',
+    evidence_strength: 'moderate',
+    evidence_reason: 'The visible wet patch and soil loss are clear, but a close-up inspection and repeat measurement are still needed.',
+    visual_evidence: [
+        'Darkened wet area along the lower canal edge.',
+        'Small section of exposed and displaced soil.',
+    ],
+    recommended_action: 'Schedule an authorized field inspection and check whether the wet area is expanding.',
+    escalation: 'Notify the local maintenance team if seepage persists or expands after water-level stabilization.',
+    data_gaps: [
+        'No scale is visible for measuring the affected area.',
+        'Drainage conditions and recent water-level history were not provided.',
+    ],
+    checklist: [
+        'Capture a close-up image with a scale reference.',
+        'Record the exact location and water level.',
+        'Recheck the area after 24 to 48 hours.',
+        'Compare the next inspection with this baseline image.',
+    ],
+};
+
+interface IntakeFormProps {
+    demoMode?: boolean;
+}
+
+const IntakeForm: React.FC<IntakeFormProps> = ({ demoMode = false }) => {
     const [images, setImages] = useState<File[]>([]);
     const [note, setNote] = useState('');
     const [asset, setAsset] = useState('');
@@ -38,7 +66,7 @@ const IntakeForm: React.FC = () => {
         }
         if (waterLevel) formData.append('water_level', waterLevel);
         try {
-            setAnalysis(await analyzeDam(formData));
+            setAnalysis(demoMode ? demoAnalysis : await analyzeDam(formData));
         } catch (err: any) {
             const detail = err?.response?.data?.detail;
             setError(detail || 'Unable to generate a report. Check that the backend and API key are ready.');
